@@ -1,0 +1,1 @@
+function r(o){const e=new Date(o),t=(new Date().getTime()-e.getTime())/1e3;return t<5?"just now":t<60?`${Math.floor(t)}s ago`:t<3600?`${Math.floor(t/60)}m ago`:t<86400?`${Math.floor(t/3600)}h ago`:`${Math.floor(t/86400)}d ago`}function a(o){return new Date(o).toLocaleString()}export{a,r as f};
