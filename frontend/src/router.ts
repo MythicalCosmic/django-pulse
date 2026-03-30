@@ -1,0 +1,45 @@
+import { createRouter, createWebHistory } from 'vue-router'
+
+const config = window.__TELESCOPE_CONFIG__ || { basePath: '/telescope/' }
+const base = '/' + config.basePath.replace(/^\/|\/$/g, '')
+
+export const router = createRouter({
+  history: createWebHistory(base),
+  routes: [
+    { path: '/', name: 'dashboard', component: () => import('./pages/DashboardPage.vue') },
+    { path: '/requests', name: 'requests', component: () => import('./pages/RequestsPage.vue') },
+    { path: '/requests/:uuid', name: 'request-detail', component: () => import('./pages/RequestDetailPage.vue') },
+    { path: '/queries', name: 'queries', component: () => import('./pages/QueriesPage.vue') },
+    { path: '/queries/:uuid', name: 'query-detail', component: () => import('./pages/EntryDetailPage.vue') },
+    { path: '/exceptions', name: 'exceptions', component: () => import('./pages/ExceptionsPage.vue') },
+    { path: '/exceptions/:uuid', name: 'exception-detail', component: () => import('./pages/ExceptionDetailPage.vue') },
+    { path: '/models', name: 'models', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'model', title: 'Models' } },
+    { path: '/models/:uuid', name: 'model-detail', component: () => import('./pages/EntryDetailPage.vue') },
+    { path: '/logs', name: 'logs', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'log', title: 'Logs' } },
+    { path: '/logs/:uuid', name: 'log-detail', component: () => import('./pages/EntryDetailPage.vue') },
+    { path: '/cache', name: 'cache', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'cache', title: 'Cache' } },
+    { path: '/cache/:uuid', name: 'cache-detail', component: () => import('./pages/EntryDetailPage.vue') },
+    { path: '/redis', name: 'redis', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'redis', title: 'Redis' } },
+    { path: '/redis/:uuid', name: 'redis-detail', component: () => import('./pages/EntryDetailPage.vue') },
+    { path: '/mail', name: 'mail', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'mail', title: 'Mail' } },
+    { path: '/mail/:uuid', name: 'mail-detail', component: () => import('./pages/MailDetailPage.vue') },
+    { path: '/views', name: 'views', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'view', title: 'Views' } },
+    { path: '/views/:uuid', name: 'view-detail', component: () => import('./pages/EntryDetailPage.vue') },
+    { path: '/events', name: 'events', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'event', title: 'Events' } },
+    { path: '/events/:uuid', name: 'event-detail', component: () => import('./pages/EntryDetailPage.vue') },
+    { path: '/commands', name: 'commands', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'command', title: 'Commands' } },
+    { path: '/commands/:uuid', name: 'command-detail', component: () => import('./pages/EntryDetailPage.vue') },
+    { path: '/dumps', name: 'dumps', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'dump', title: 'Dumps' } },
+    { path: '/dumps/:uuid', name: 'dump-detail', component: () => import('./pages/EntryDetailPage.vue') },
+    { path: '/http-client', name: 'http-client', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'client-request', title: 'HTTP Client' } },
+    { path: '/http-client/:uuid', name: 'http-client-detail', component: () => import('./pages/EntryDetailPage.vue') },
+    { path: '/gates', name: 'gates', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'gate', title: 'Gates' } },
+    { path: '/gates/:uuid', name: 'gate-detail', component: () => import('./pages/EntryDetailPage.vue') },
+    { path: '/notifications', name: 'notifications', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'notification', title: 'Notifications' } },
+    { path: '/notifications/:uuid', name: 'notification-detail', component: () => import('./pages/EntryDetailPage.vue') },
+    { path: '/schedule', name: 'schedule', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'schedule', title: 'Schedule' } },
+    { path: '/schedule/:uuid', name: 'schedule-detail', component: () => import('./pages/EntryDetailPage.vue') },
+    { path: '/batches', name: 'batches', component: () => import('./pages/TypedListPage.vue'), props: { typeSlug: 'batch', title: 'Batches' } },
+    { path: '/batches/:uuid', name: 'batch-detail', component: () => import('./pages/EntryDetailPage.vue') },
+  ],
+})
