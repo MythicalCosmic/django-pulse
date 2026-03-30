@@ -55,6 +55,16 @@ TEMPLATES = [
 STATIC_URL = "/static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        },
+    }
+}
+
 TELESCOPE = {
     "ENABLED": True,
     "RECORDING": True,
@@ -65,11 +75,11 @@ TELESCOPE = {
         "ModelWatcher": {"enabled": True},
         "LogWatcher": {"enabled": True},
         "DumpWatcher": {"enabled": True},
+        "CacheWatcher": {"enabled": True},
+        "RedisWatcher": {"enabled": True},
         "ViewWatcher": {"enabled": False},
         "EventWatcher": {"enabled": False},
-        "CacheWatcher": {"enabled": False},
         "MailWatcher": {"enabled": False},
-        "RedisWatcher": {"enabled": False},
         "ClientRequestWatcher": {"enabled": False},
         "CommandWatcher": {"enabled": False},
         "GateWatcher": {"enabled": False},

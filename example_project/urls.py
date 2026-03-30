@@ -23,6 +23,8 @@ def index(request):
             <li><a href="/api/slow/">/api/slow/</a> — Slow endpoint (~500ms)</li>
             <li><a href="/api/dump/">/api/dump/</a> — Test telescope.dump()</li>
             <li><a href="/api/log/">/api/log/</a> — Generate log entries</li>
+            <li><a href="/api/cache/">/api/cache/</a> — Cache operations (set/get/delete/incr)</li>
+            <li><a href="/api/redis/">/api/redis/</a> — Raw Redis operations</li>
         </ul>
         <p><a href="/telescope/" style="font-size: 1.2em; font-weight: bold;">Open Telescope Dashboard</a></p>
     </body>
@@ -69,6 +71,64 @@ def log_view(request):
     return JsonResponse({"message": "Generated 4 log entries"})
 
 
+def cache_view(request):
+    from django.core.cache import cache
+    import uuid
+
+    # Set some values
+    key = f"test_{uuid.uuid4().hex[:6]}"
+    cache.set(key, {"hello": "world", "number": 42}, timeout=60)
+    cache.set("counter", 0, timeout=300)
+
+    # Get (hit)
+    val = cache.get(key)
+
+    # Get (miss)
+    miss = cache.get("nonexistent_key_xyz")
+
+    # Increment
+    cache.incr("counter")
+
+    # has_key
+    exists = cache.has_key(key)
+
+    # get_many
+    many = cache.get_many([key, "counter", "nonexistent"])
+
+    # Delete
+    cache.delete(key)
+
+    return JsonResponse({
+        "message": "Exercised cache operations",
+        "set_key": key,
+        "get_hit": val,
+        "get_miss": miss,
+        "exists": exists,
+        "get_many_keys": list(many.keys()),
+    }, json_dumps_params={"default": str})
+
+
+def redis_view(request):
+    import redis as redis_lib
+
+    r = redis_lib.StrictRedis(host="127.0.0.1", port=6379, db=2, decode_responses=True)
+
+    # Basic operations
+    r.set("telescope:test", "hello_world")
+    val = r.get("telescope:test")
+    r.incr("telescope:counter")
+    r.lpush("telescope:list", "item1", "item2", "item3")
+    items = r.lrange("telescope:list", 0, -1)
+    r.expire("telescope:test", 60)
+    r.delete("telescope:list")
+
+    return JsonResponse({
+        "message": "Exercised raw Redis operations",
+        "get": val,
+        "list_items": items,
+    })
+
+
 urlpatterns = [
     path("", index),
     path("api/users/", list_users),
@@ -77,6 +137,8 @@ urlpatterns = [
     path("api/slow/", slow_view),
     path("api/dump/", dump_view),
     path("api/log/", log_view),
+    path("api/cache/", cache_view),
+    path("api/redis/", redis_view),
     path("telescope/", include("telescope.urls")),
 ]
 
