@@ -4,17 +4,17 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="django-pulse",
+    name="django-scope",
     version="1.0.0",
     author="MythicalCosmic",
     author_email="qodirjonov0854@gmail.com",
     description="A real-time debugging and monitoring dashboard for Django with minimal overhead.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/MythicalCosmic/django-pulse",
+    url="https://github.com/MythicalCosmic/django-scope",
     project_urls={
-        "Bug Tracker": "https://github.com/MythicalCosmic/django-pulse/issues",
-        "Documentation": "https://github.com/MythicalCosmic/django-pulse/wiki",
+        "Bug Tracker": "https://github.com/MythicalCosmic/django-scope/issues",
+        "Documentation": "https://github.com/MythicalCosmic/django-scope/wiki",
     },
     license="MIT",
     packages=find_packages(),

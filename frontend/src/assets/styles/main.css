@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant light (&:where(.light, .light *));
+
 @theme {
   --color-primary-50: #eff6ff;
   --color-primary-100: #dbeafe;
@@ -35,9 +37,11 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-.light body,
-body.light {
+.light body {
   @apply bg-surface-50 text-surface-800;
+  color-scheme: light;
+}
+html.light {
   color-scheme: light;
 }
 
