@@ -3,7 +3,7 @@ import time
 from collections import defaultdict
 from contextvars import ContextVar
 
-from django.db import connections
+from django.db.backends.signals import connection_created
 
 from ..entry_type import EntryType
 from ..recorder import Recorder
@@ -12,6 +12,9 @@ from .base import BaseWatcher
 
 # Track query patterns per request for N+1 detection
 _query_patterns: ContextVar[dict | None] = ContextVar("telescope_query_patterns", default=None)
+
+# Track which connections already have the wrapper installed
+_patched_connections = set()
 
 
 def reset_query_tracking():
@@ -23,11 +26,36 @@ def get_query_patterns():
 
 
 class QueryWatcher(BaseWatcher):
+    _instance = None
+
     def register(self):
-        # Install execute_wrapper on all database connections
+        QueryWatcher._instance = self
+        # Install on any connections that already exist
+        from django.db import connections
         for alias in connections:
-            conn = connections[alias]
-            conn.execute_wrappers.append(self._execute_wrapper)
+            try:
+                conn = connections[alias]
+                self._install_wrapper(conn)
+            except Exception:
+                pass
+
+        # Listen for new connections so every future connection gets the wrapper
+        connection_created.connect(self._on_connection_created, dispatch_uid="telescope_query_watcher")
+
+    @staticmethod
+    def _on_connection_created(sender, connection, **kwargs):
+        """Called whenever Django creates a new database connection."""
+        instance = QueryWatcher._instance
+        if instance:
+            instance._install_wrapper(connection)
+
+    def _install_wrapper(self, connection):
+        """Install the execute_wrapper on a connection if not already installed."""
+        conn_id = id(connection)
+        if conn_id in _patched_connections:
+            return
+        _patched_connections.add(conn_id)
+        connection.execute_wrappers.append(self._execute_wrapper)
 
     def _execute_wrapper(self, execute, sql, params, many, context):
         # Skip telescope's own queries to prevent recursion

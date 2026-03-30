@@ -4,6 +4,7 @@ import type { TelescopeEntry } from './types'
 export type WsStatus = 'connecting' | 'connected' | 'disconnected'
 
 const WS_RECONNECT_DELAYS = [1000, 2000, 4000, 8000, 16000]
+const WS_MAX_RECONNECT_ATTEMPTS = 5
 
 export function useWebSocket() {
   const status = ref<WsStatus>('disconnected')
@@ -13,11 +14,13 @@ export function useWebSocket() {
   let reconnectAttempt = 0
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null
   let listeners: Array<(entry: TelescopeEntry) => void> = []
+  let gaveUp = false  // Stop reconnecting after max attempts (WSGI-only server)
 
   function connect() {
     if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
       return
     }
+    gaveUp = false
 
     const config = window.__TELESCOPE_CONFIG__ || {
       wsUrl: `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/ws/telescope/`,
@@ -55,7 +58,13 @@ export function useWebSocket() {
   }
 
   function scheduleReconnect() {
-    if (reconnectTimer) return
+    if (reconnectTimer || gaveUp) return
+    if (reconnectAttempt >= WS_MAX_RECONNECT_ATTEMPTS) {
+      // Server likely doesn't support WebSockets (WSGI-only). Stop trying.
+      gaveUp = true
+      status.value = 'disconnected'
+      return
+    }
     const delay = WS_RECONNECT_DELAYS[Math.min(reconnectAttempt, WS_RECONNECT_DELAYS.length - 1)]
     reconnectAttempt++
     reconnectTimer = setTimeout(() => {
