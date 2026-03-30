@@ -1,5 +1,6 @@
 import logging
 import uuid
+from contextvars import ContextVar
 
 from .context import get_batch_id, get_buffer, is_recording
 from .entry_type import EntryType
@@ -7,12 +8,17 @@ from .truncation import truncate_content
 
 logger = logging.getLogger("telescope.recorder")
 
+# Re-entrancy guard: prevent telescope from recording its own DB queries
+_persisting: ContextVar[bool] = ContextVar("telescope_persisting", default=False)
+
 
 class Recorder:
     """Central write path: buffer entries during request, flush at end."""
 
     @classmethod
     def record(cls, entry_type: EntryType, content: dict, tags: list[str] | None = None):
+        if _persisting.get(False):
+            return
         if not is_recording():
             return
 
@@ -69,6 +75,7 @@ class Recorder:
             if entry_data.get("tags"):
                 tag_map[entry_data["uuid"]] = entry_data["tags"]
 
+        token = _persisting.set(True)
         try:
             created = TelescopeEntry.objects.bulk_create(db_entries)
 
@@ -86,6 +93,8 @@ class Recorder:
 
         except Exception:
             logger.exception("Failed to persist telescope entries")
+        finally:
+            _persisting.reset(token)
 
     @classmethod
     def _broadcast(cls, entries):

@@ -30,20 +30,22 @@ class QueryWatcher(BaseWatcher):
             conn.execute_wrappers.append(self._execute_wrapper)
 
     def _execute_wrapper(self, execute, sql, params, many, context):
+        # Skip telescope's own queries to prevent recursion
+        sql_str = str(sql)
+        if "telescope_" in sql_str:
+            return execute(sql, params, many, context)
+
         start = time.perf_counter()
         try:
             result = execute(sql, params, many, context)
         finally:
             duration_ms = (time.perf_counter() - start) * 1000
-            self._record_query(sql, params, duration_ms, context)
+            self._record_query(sql_str, params, duration_ms, context)
         return result
 
-    def _record_query(self, sql, params, duration_ms, context):
+    def _record_query(self, sql_str, params, duration_ms, context):
         slow_threshold = get_config("SLOW_QUERY_THRESHOLD")
         n_plus_one_threshold = get_config("N_PLUS_ONE_THRESHOLD")
-
-        # Normalize SQL for pattern hashing
-        sql_str = str(sql)
         pattern_hash = hashlib.md5(self._normalize_sql(sql_str).encode()).hexdigest()
 
         tags = []

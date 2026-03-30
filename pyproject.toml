@@ -47,8 +47,15 @@ include = ["src/telescope/**", "LICENSE", "README.md"]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "tests.settings"
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 
 [tool.ruff]
 src = ["src"]
 line-length = 120
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-asyncio>=1.3.0",
+    "pytest-django>=4.12.0",
+]
